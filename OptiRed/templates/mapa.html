@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mapa.css') }}">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <title>Grafo Geografico</title>
+</head>
+<body>
+    <div class="inicio">
+        <button class="button" onclick="location.href='/'">
+            Regresar al Inicio
+        </button>
+
+        <h1 class="title">Grafo Geográfico de la Cobertura Móvil en Mapa</h1>
+    </div>
+
+    <div class="page">
+        <div class="info">
+            <p><strong>Mapa interactivo:</strong> 
+            </p>
+        </div>
+
+        <!-- Aquí va el mapa -->
+        <div id="map"></div>
+    </div>
+
+    <script>
+    // Crear el mapa base
+    const map = L.map('map').setView([-12.0464, -77.0428], 9); // centro en Lima
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    // Traer datos del grafo desde Flask
+    fetch('/data/grafo')
+        .then(response => response.json())
+        .then(data => {
+            const markers = [];
+
+            // 1. Dibujar nodos como marcadores o círculos
+            data.nodes.forEach(nodo => {
+                const marker = L.circleMarker([nodo.lat, nodo.lon], {
+                    radius: 4
+                }).addTo(map);
+
+                marker.bindPopup(`<b>${nodo.id}</b>`);
+                markers.push([nodo.lat, nodo.lon]);
+            });
+
+            // 2. Dibujar aristas como líneas
+            data.edges.forEach(edge => {
+                L.polyline(edge.coords, {
+                    weight: 1
+                }).addTo(map);
+            });
+
+            // 3. Ajustar el mapa para que abarque todos los nodos
+            if (markers.length > 0) {
+                map.fitBounds(markers);
+            }
+        })
+        .catch(error => {
+            console.error('Error al cargar datos del grafo:', error);
+        });
+</script>
+
+</body>
+</html>
