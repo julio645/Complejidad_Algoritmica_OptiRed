@@ -1,0 +1,68 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+
+.inicio {
+    background-color: #f5f7fb;
+    display: flex;
+    padding: 3rem 25px;
+    position: relative;
+}
+
+.inicio .title {
+    text-align: center;
+    margin: 0;
+    width: 100%;          /* Ocupa todo el espacio */
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);  /* Centra perfectamente */
+}
+
+/* Página del mapa */
+.page {
+    padding: 20px;
+    background-color: #f5f7fb; /* gris muy suave */
+    min-height: 100vh; /* que ocupe toda la pantalla */
+}
+
+/* Título de la página del mapa */
+.title {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 15px;
+}
+
+/* Caja azul clarita con la información */
+.info {
+    background-color: #e6f0ff;
+    border-radius: 5px;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    font-size: 0.95rem;
+}
+
+/* Contenedor del mapa */
+#map {
+    width: 100%;
+    height: 500px; /* alto del mapa */
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.button {
+    background-color: rgb(38, 43, 90);;
+    color: #b2d0f1;
+    font-size: 1.1rem;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: bold;
+}
+
+.button:hover {
+    background: #e6e6e6;
+}
