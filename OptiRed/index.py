@@ -1,150 +1,96 @@
-from flask import Flask, render_template, jsonify
-import pandas as pd
-import networkx as nx
-import math
+from flask import Flask, jsonify, render_template, request
+from grafo import G
+from dijkstra import ejecutar_dijkstra
+from prim import arbol_prim
+from kruskal import arbol_kruskal
 
 app = Flask(__name__)
 
-# =========  CARGA Y CONSTRUCCIÓN DEL GRAFO  ========= #
+# Grafo
+@app.route('/data/grafo')
+def data_grafo():
+    nodes = []
+    edges = []
 
-def distancia_km(lat1, lon1, lat2, lon2):
-    R = 6371  # Radio de la Tierra en km
+    for name, data in G.nodes(data=True):
+        nodes.append({
+            "id": name,
+            "lat": data["lat"],
+            "lon": data["lon"]
+        })
 
-    lat1 = math.radians(lat1)
-    lon1 = math.radians(lon1)
-    lat2 = math.radians(lat2)
-    lon2 = math.radians(lon2)
+    for u, v in G.edges():
+        edges.append({
+            "from": u,
+            "to": v,
+            "coords": [
+                [G.nodes[u]["lat"], G.nodes[u]["lon"]],
+                [G.nodes[v]["lat"], G.nodes[v]["lon"]]
+            ]
+        })
 
-    dlat = lat2 - lat1
-    dlon = lon2 - lon1
+    return jsonify({"nodes": nodes, "edges": edges})
 
-    a = math.sin(dlat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
-    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+# Dijkstra
+@app.route('/dijkstra')
+def api_dijkstra():
+    origen = request.args.get('origen')
+    destino = request.args.get('destino')
 
-    return R * c
+    if origen not in G or destino not in G:
+        return jsonify({"error": "Nodo inválido"}), 400
 
-def construir_grafo():
-    excel = pd.read_excel("CoberturaMovil_v2.xlsx", sheet_name="Hoja 1")
+    path, distancia = ejecutar_dijkstra(G, origen, destino)
 
-    G = nx.Graph()
+    if path is None:
+        return jsonify({"error": "No existe ruta"}), 400
 
-    excel_sorted = excel.sort_values(by=['LATITUD', 'LONGITUD'], ascending=[False, True])
+    coords = [[G.nodes[n]["lat"], G.nodes[n]["lon"]] for n in path]
 
-    # Nodos
-    for idx, row in excel_sorted.iterrows():
-        nombre = row['CENTRO_POBLADO']
-        latitud = row['LATITUD']
-        longitud = row['LONGITUD']
-
-        G.add_node(
-            nombre,
-            lat=latitud,
-            lon=longitud
-        )
-
-    # Aristas por distancia < 5 km
-    for n1 in G.nodes():
-        for n2 in G.nodes():
-            if n1 != n2:
-                lat1 = G.nodes[n1]['lat']
-                lon1 = G.nodes[n1]['lon']
-                lat2 = G.nodes[n2]['lat']
-                lon2 = G.nodes[n2]['lon']
-
-                d = distancia_km(lat1, lon1, lat2, lon2)
-
-                if d < 5:
-                    G.add_edge(n1, n2)
-
-    # Conexiones extras (igual que en tu script)
-    G.add_edge('CHACLACAYO', 'CIENEGUILLA')
-    G.add_edge('CHACLACAYO', 'SAN FRANCISCO')
-    G.add_edge('CHACLACAYO', 'CHOSICA')
-    G.add_edge('CHACLLA', 'SHIMAY')
-    G.add_edge('CHACLLA', 'ARAHUAY')
-    G.add_edge('VICAS', 'ARAHUAY')
-    G.add_edge('VICAS', 'LARAOS')
-    G.add_edge('MARCO', 'HUAMANTANGA')
-    G.add_edge('ACOS', 'SAN AGUSTIN DE HUAYOPAMPA')
-    G.add_edge('ACOS', 'SAN PEDRO DE HUAROQUIN')
-    G.add_edge('ACOS', 'IHUARI')
-    G.add_edge('ANCON', 'CHACRA Y MAR')
-    G.add_edge('ANCON', 'GRAMADALES')
-    G.add_edge('LANCHI', 'SANTO DOMINGO DE LOS OLLEROS')
-    G.add_edge('LANCHI', 'MARIATANA')
-    G.add_edge('LANCHI', 'HUANCATA')
-    G.add_edge('LANCHI', 'SANTIAGO DE ANCHUCAYA')
-    G.add_edge('SANTA ROSA', 'TORRES DE COPACABANA')
-    G.add_edge('COTO', 'ESTADIO')
-    G.add_edge('YANACOCHA', 'PIRCA')
-    G.add_edge('YANACOCHA', 'HUACOS')
-    G.add_edge('YANACOCHA', 'CHACACANCHA')
-    G.add_edge('YAPACOCHA', 'JUSHPA')
-    G.add_edge('YAPACOCHA', 'HUACOS')
-    G.add_edge('CALLAHUANCA', 'HUALELUCMA')
-    G.add_edge('SISICAYA', 'SANTA ROSA DE CHONTAY (CHONTAY)')
-    G.add_edge('SISICAYA', 'TAMA')
-    G.add_edge('ANTIOQUIA', 'TAMA')
-    G.add_edge('ANTIOQUIA', 'SAN ANDRES DE TUPICOCHA')
-    G.add_edge('ANTIOQUIA', 'CRUZ DE LAYA')
-    G.add_edge('VILLA EL SALVADOR', 'VILLA MARIA DEL TRIUNFO')
-    G.add_edge('VILLA EL SALVADOR', 'LOS ALMACIGOS')
-    G.add_edge('VITARTE', 'LA MOLINA')
-    G.add_edge('VITARTE', 'SANTA ANITA - LOS FICUS')
-    G.add_edge('LA LIBERTAD', 'CARABAYLLO')
-    G.add_edge('JICAMARCA ANEXO 21', 'FUNDO TORRE BLANCA (BLANCA)')
-    G.add_edge('QUIVES', 'SHIMAY')
-    G.add_edge('GRANJA N 180', 'COCAYALTA')
-    G.add_edge('YANE', 'HUAMANTANGA')
-    G.add_edge('YANE', 'SAN JOSE VIEJO')
-    G.add_edge('HUAQUECHA', 'CHACAHUARO')
-    G.add_edge('CHICLA', 'MATIPARADA')
-
-    return G
-
-# Construimos el grafo una sola vez al inicio
-G = construir_grafo()
-
-# Preparamos datos para el frontend (ajusta /1e7 si lo necesitas o quítalo si tus coords ya están en grados)
-nodes_data = []
-for name, data in G.nodes(data=True):
-    nodes_data.append({
-        "id": name,
-        "lat": data["lat"],   # sin /1e7
-        "lon": data["lon"]    # sin /1e7
+    return jsonify({
+        "path": path,
+        "distance": distancia,
+        "coords": coords
     })
 
-edges_data = []
-for u, v in G.edges():
-    lat1 = G.nodes[u]['lat']
-    lon1 = G.nodes[u]['lon']
-    lat2 = G.nodes[v]['lat']
-    lon2 = G.nodes[v]['lon']
+# Prim / Kruskal
+@app.route('/mst')
+def api_mst():
+    alg = request.args.get("alg", "prim")
 
-    edges_data.append({
-        "from": u,
-        "to": v,
-        "coords": [[lat1, lon1], [lat2, lon2]]  # [lat, lon]
+    if alg == "prim":
+        mst = arbol_prim(G)
+        nombre = "Prim"
+    elif alg == "kruskal":
+        mst = arbol_kruskal(G)
+        nombre = "Kruskal"
+    else:
+        return jsonify({"error": "Algoritmo no válido"}), 400
+
+    edges = []
+    total_cost = 0
+
+    for u, v, data in mst.edges(data=True):
+        edges.append([
+            [G.nodes[u]["lat"], G.nodes[u]["lon"]],
+            [G.nodes[v]["lat"], G.nodes[v]["lon"]]
+        ])
+        total_cost += data.get("weight", 0)
+
+    return jsonify({
+        "algoritmo": nombre,
+        "edges": edges,
+        "total_cost": total_cost
     })
 
-
-# =========  RUTAS FLASK  ========= #
-
+# Routas
 @app.route('/')
-def principal():
+def index():
     return render_template('index.html')
 
 @app.route('/mapa')
 def mapa():
     return render_template('mapa.html')
-
-# Nueva ruta: devuelve nodos y aristas como JSON
-@app.route('/data/grafo')
-def data_grafo():
-    return jsonify({
-        "nodes": nodes_data,
-        "edges": edges_data
-    })
 
 if __name__ == '__main__':
     app.run(debug=True, port=5017)

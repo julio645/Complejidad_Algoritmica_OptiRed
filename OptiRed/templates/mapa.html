@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/mapa.css') }}">
-    
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <title>Grafo Geografico</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mapa.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script type="module" src="{{ url_for('static', filename='script/mapa.js') }}"></script>
+
+    <title>Grafo Geográfico</title>
 </head>
 <body>
     <div class="inicio">
@@ -19,57 +21,48 @@
         <h1 class="title">Grafo Geográfico de la Cobertura Móvil en Mapa</h1>
     </div>
 
-    <div class="page">
-        <div class="info">
-            <p><strong>Mapa interactivo:</strong> 
-            </p>
+    <div class="contenido">
+        <div class="contenido-info">
+            <p><strong>Mapa interactivo:</strong></p>
         </div>
 
-        <!-- Aquí va el mapa -->
-        <div id="map"></div>
+        <div class="contenido-grafico">
+
+            <!-- Mapa -->
+            <div class="contenido-grafico-izquierda" id="map"></div>
+
+            <div class="contenido-grafico-derecha">
+
+                <label for="opciones">Elige una opción:</label>
+                <select id="opciones" name="opciones">
+                    <option value="1">Algoritmo de Dijkstra</option>
+                    <option value="2">Árbol de Expansión Mínima (Prim)</option>
+                    <option value="3">Árbol de Expansión Mínima (Kruskal)</option>
+                </select>
+
+                <div id="dijkstra-panel" class="resultado-panel">
+                    <h3 id="panel-title">Ruta con Dijkstra</h3>
+
+                    <div class="field" id="field-origen">
+                        <label for="origen">Nodo origen:</label>
+                        <input type="text" id="origen" name="origen" placeholder="Ingrese distrito origen">
+                    </div>
+
+                    <div class="field" id="field-destino">
+                        <label for="destino">Nodo destino:</label>
+                        <input type="text" id="destino" name="destino" placeholder="Ingrese distrito destino">
+                    </div>
+
+                    <button id="btn-calcular" class="button-secundario">
+                        Calcular
+                    </button>
+                </div>
+
+                <!-- Resultados -->
+                <div id="resultado" class="resultado-final"></div>
+            </div>
+        </div>
     </div>
-
-    <script>
-    // Crear el mapa base
-    const map = L.map('map').setView([-12.0464, -77.0428], 9); // centro en Lima
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; OpenStreetMap'
-    }).addTo(map);
-
-    // Traer datos del grafo desde Flask
-    fetch('/data/grafo')
-        .then(response => response.json())
-        .then(data => {
-            const markers = [];
-
-            // 1. Dibujar nodos como marcadores o círculos
-            data.nodes.forEach(nodo => {
-                const marker = L.circleMarker([nodo.lat, nodo.lon], {
-                    radius: 4
-                }).addTo(map);
-
-                marker.bindPopup(`<b>${nodo.id}</b>`);
-                markers.push([nodo.lat, nodo.lon]);
-            });
-
-            // 2. Dibujar aristas como líneas
-            data.edges.forEach(edge => {
-                L.polyline(edge.coords, {
-                    weight: 1
-                }).addTo(map);
-            });
-
-            // 3. Ajustar el mapa para que abarque todos los nodos
-            if (markers.length > 0) {
-                map.fitBounds(markers);
-            }
-        })
-        .catch(error => {
-            console.error('Error al cargar datos del grafo:', error);
-        });
-</script>
 
 </body>
 </html>
