@@ -1,0 +1,56 @@
+body {
+    margin: 0; 
+    padding: 0; 
+}
+
+.container {
+    height: 100vh; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    text-align: center; 
+    background-color: #1e5799; 
+    color: rgb(38, 43, 90); 
+}
+
+.container-info {
+    padding: 20px 0 0 0; 
+}
+
+.titulo {
+    font-size: 5rem; 
+    font-weight: bold; 
+    margin-bottom: 20px; 
+}
+
+.texto {
+    font-size: 1.2rem; 
+    max-width: 600px; 
+    line-height: 1.6; 
+    margin-bottom: 40px; 
+    color: white; 
+    padding: 20px 0 0 0; 
+}
+
+.container-autores { 
+    font-size: 1.2rem; 
+    margin-bottom: 10px; 
+    color: white; 
+    padding: 5rem 0;
+}
+
+.button {
+    background-color: rgb(38, 43, 90); 
+    color: #b2d0f1; 
+    font-size: 1.1rem; 
+    padding: 12px 25px; 
+    border: none; 
+    border-radius: 30px; 
+    cursor: pointer; 
+    transition: all 0.3s ease; 
+    font-weight: bold; 
+}
+
+.button:hover {
+    background: #e6e6e6; 
+}
