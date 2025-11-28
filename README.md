@@ -5,7 +5,7 @@
   ## **Complejidad Algorítmica**
   
   ## **Informe de Trabajo Parcial \- Segundo Hito**
-  
+   
   ## **Profesor:**  
   **Arias Orihuela John Edward**
   
