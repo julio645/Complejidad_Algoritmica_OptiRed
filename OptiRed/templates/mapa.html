@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mapa.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script defer src="{{ url_for('static', filename='script/mapa.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='script/prim_kruskal.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='script/dijkstra.js') }}"></script>
+    
+    <title>Grafo Geográfico</title>
+</head>
+<body>
+    <div class="inicio">
+        <button class="button" onclick="location.href='/'">
+            Regresar al Inicio
+        </button>
+
+        <h1 class="titulo">Grafo Geográfico de la Cobertura Móvil en Mapa</h1>
+    </div>
+
+    <div class="contenido">
+        <div class="contenido-info">
+            <div class="contenido-info-texto">
+                <p class="titulo-info"><strong>Mapa interactivo:</strong></p>
+
+                <div class="contenido-info-botones">
+                    <button id="btn-usuario" class="button-secundario">Usuario</button>
+                    <button id="btn-tecnico" class="button-secundario">Técnico</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="contenido-grafico">
+            <div class="contenido-grafico-izquierda" id="map"></div>
+
+            <div class="contenido-grafico-derecha">
+                <label for="opciones">Elige una opción:</label>
+                
+                <select id="opciones" name="opciones">
+                    <option value="1">Algoritmo de Dijkstra</option>
+                    <option value="2">Árbol de Expansión Mínima - Prim</option>
+                    <option value="3">Árbol de Expansión Mínima - Kruskal</option>
+                </select>
+
+                <div id="dijkstra-panel" class="resultado-panel">
+                    <h3 id="panel-titulo">Ruta con Dijkstra</h3>
+
+                    <div class="respuesta" id="respuesta-origen">
+                        <label for="origen">Nodo origen:</label>
+                        <input list="lista-nodos" type="texto" id="origen" name="origen" placeholder="Ingrese distrito origen">
+                    </div>
+
+                    <div class="respuesta" id="respuesta-destino">
+                        <label for="destino">Nodo destino:</label>
+                        <input list="lista-nodos" type="texto" id="destino" name="destino" placeholder="Ingrese distrito destino">
+                    </div>
+
+                    <datalist id="lista-nodos"></datalist>
+
+                    <button id="btn-calcular" class="button-secundario">
+                        Calcular
+                    </button>
+                </div>
+
+                <div id="resultado" class="resultado-final"></div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
