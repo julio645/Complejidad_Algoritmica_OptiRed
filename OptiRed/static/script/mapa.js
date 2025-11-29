@@ -1,8 +1,13 @@
+const key = 'OptiRed';
 const map = L.map('map').setView([-12.0464, -77.0428], 9);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
-    attribution: 'OptiRed'
+    attribution: 'OptiRed',
+    tileSize: 512,
+    zoomOffset: -1,
+    minZoom: 1,
+    crossOrigin: true
 }).addTo(map);
 
 let dijkstraLayer = null;
