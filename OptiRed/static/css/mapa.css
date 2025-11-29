@@ -9,7 +9,7 @@ body {
     padding: 3rem 25px; 
     position: relative; 
 } 
-    
+
 .inicio .titulo { 
     text-align: center; 
     margin: 0; 
@@ -25,29 +25,47 @@ body {
     background-color: #f5f7fb;
     min-height: 50%;
 }
-   
+
 .contenido-info { 
     background-color: #e6f0ff; 
     border-radius: 5px; 
     padding: 10px 15px; 
     margin-bottom: 15px; 
-    font-size: 0.95rem; } 
-    
+    font-size: 0.95rem; 
+}
+
+.contenido-info-texto {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.titulo-info {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.contenido-info-botones {
+    display: flex;
+    gap: 10px;
+}
+   
 .contenido-grafico { 
     display: flex; 
     justify-content: flex-start; 
-} 
+}
 
 .contenido-grafico-izquierda { 
     width: 50%; 
     height: 650px;
     border-radius: 10px; 
     overflow: hidden; 
-} 
-    
+}
+   
 .contenido-grafico-derecha { 
     padding: 0px 0px 0px 2rem; 
-} 
+}
 
 .contenido-grafico-derecha {
     width: 40%;
@@ -60,7 +78,7 @@ body {
     text-align: center; 
     font-size: 2rem; 
     margin-bottom: 15px; 
-} 
+}
 
 .resultado-panel { 
     margin-top: 1.5rem; 
@@ -69,12 +87,12 @@ body {
     border-radius: 8px; 
     box-shadow: 0 0 8px rgba(0,0,0,0.05); 
     display: none;
-} 
-    
+}
+   
 .resultado-panel h3 { 
     margin: 0 0 0.8rem 0; 
     font-size: 1.1rem; 
-} 
+}
 
 .resultado-final {
     margin-top: 1rem;
@@ -95,7 +113,7 @@ body {
     height: 650px;
     border-radius: 10px; 
     overflow: hidden; 
-} 
+}
 
 .button { 
     background-color: rgb(38, 43, 90);
@@ -108,36 +126,36 @@ body {
     transition: all 0.3s ease; 
     font-weight: bold; 
     position: absolute; 
-} 
-    
+}
+   
 .button:hover { 
     background: #e6e6e6; 
-} 
+}
 
 select { 
     padding: 8px 12px; 
     border-radius: 8px; 
     border: 1px solid #ccc; 
     font-size: 1rem; 
-} 
-    
+}
+   
 .respuesta { 
     display: flex; 
     flex-direction: column; 
     margin-bottom: 0.8rem; 
-} 
+}
 
 .respuesta label { 
     font-size: 0.9rem; 
     margin-bottom: 0.3rem; 
-} 
-    
+}
+   
 .respuesta input, .respuesta select { 
     padding: 8px 10px; 
     border-radius: 6px; 
     border: 1px solid #ccc; 
     font-size: 0.95rem; 
-} 
+}
 
 .button-secundario { 
     background-color: rgb(38, 43, 90); 
@@ -150,8 +168,8 @@ select {
     font-weight: 500; 
     width: 100%; 
     margin-top: 0.5rem; 
-} 
-    
+}
+   
 .button-secundario:hover { 
     background-color: #2f355f; 
 }

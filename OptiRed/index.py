@@ -28,7 +28,10 @@ def data_grafo():
             "coords": [
                 [G.nodes[u]["lat"], G.nodes[u]["lon"]],
                 [G.nodes[v]["lat"], G.nodes[v]["lon"]]
-            ]
+            ],
+
+            # NUEVO: peso de la arista
+            "weight": G[u][v]["weight"]
         })
 
     return jsonify({"nodes": nodes, "edges": edges})

@@ -8,8 +8,10 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script type="module" src="{{ url_for('static', filename='script/mapa.js') }}"></script>
-
+    <script defer src="{{ url_for('static', filename='script/mapa.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='script/prim_kruskal.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='script/dijkstra.js') }}"></script>
+    
     <title>Grafo Geográfico</title>
 </head>
 <body>
@@ -23,15 +25,19 @@
 
     <div class="contenido">
         <div class="contenido-info">
-            <p><strong>Mapa interactivo:</strong></p>
+            <div class="contenido-info-texto">
+                <p class="titulo-info"><strong>Mapa interactivo:</strong></p>
+
+                <div class="contenido-info-botones">
+                    <button id="btn-usuario" class="button-secundario">Usuario</button>
+                    <button id="btn-tecnico" class="button-secundario">Técnico</button>
+                </div>
+            </div>
         </div>
 
         <div class="contenido-grafico">
-
-            <!-- Mapa -->
             <div class="contenido-grafico-izquierda" id="map"></div>
 
-            <!-- Opciones -->
             <div class="contenido-grafico-derecha">
                 <label for="opciones">Elige una opción:</label>
                 
@@ -61,7 +67,6 @@
                     </button>
                 </div>
 
-                <!-- Resultados -->
                 <div id="resultado" class="resultado-final"></div>
             </div>
         </div>

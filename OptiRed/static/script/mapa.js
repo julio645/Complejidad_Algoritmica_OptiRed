@@ -1,17 +1,10 @@
-const key = 'OptiRed';
-const map = L.map('map').setView([-12.0464, -77.0428], 9);
-
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: 'OptiRed',
-    tileSize: 512,
-    zoomOffset: -1,
-    minZoom: 1,
-    crossOrigin: true
-}).addTo(map);
-
+let grafoCompleto = null;
 let dijkstraLayer = null;
 let mstLayer = null;
+
+let nodosTecnicos = L.layerGroup();
+let aristasTecnicas = L.layerGroup();
+let nodosUsuario = L.layerGroup();
 
 const select = document.getElementById('opciones');
 const dijkstraPanel = document.getElementById('dijkstra-panel');
@@ -22,45 +15,128 @@ const origenInput = document.getElementById('origen');
 const destinoInput = document.getElementById('destino');
 const btnCalcular = document.getElementById('btn-calcular');
 const resultadoDiv = document.getElementById('resultado');
+const btnUsuario = document.getElementById('btn-usuario');
+const btnTecnico = document.getElementById('btn-tecnico');
 
-// Cargar grafo del Phyton
+L.Control.Watermark = L.Control.extend({
+    onAdd: function () {
+        const img = L.DomUtil.create('img');
+        img.src = '/static/img/logo.png';
+        img.style.width = '120px';
+        return img;
+    },
+    onRemove: function () {}
+});
+
+L.control.watermark = function (opts) {
+    return new L.Control.Watermark(opts);
+};
+
+const map = L.map('map').setView([-12.0464, -77.0428], 9);
+L.control.watermark({ position: 'bottomleft' }).addTo(map);
+
+// Icono
+const iconoUsuario = L.icon({
+    iconUrl: '/static/img/antenna-1.svg',
+    iconSize: [38, 38],
+    iconAnchor: [19, 38],
+    popupAnchor: [0, -38]
+});
+
+// Mapa base
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: 'OptiRed',
+    tileSize: 512,
+    zoomOffset: -1,
+    minZoom: 1,
+    crossOrigin: true
+}).addTo(map);
+
+// Cargar grafo desde API
 fetch('/data/grafo')
     .then(response => response.json())
     .then(data => {
-        const markers = [];
+        grafoCompleto = data;
 
-        // Ordena alfabeticamente
+        const markers = [];
         const datalist = document.getElementById('lista-nodos');
 
-        // Ordenar POR LABEL (lo que se muestra)
-        data.nodes.sort((a, b) => a.label.localeCompare(b.label));
+        grafoCompleto.nodes.sort((a, b) => a.label.localeCompare(b.label));
 
-        data.nodes.forEach(nodo => {
+        grafoCompleto.nodes.forEach(nodo => {
             const option = document.createElement('option');
             option.value = nodo.label;
             option.setAttribute("data-id", nodo.id);
             datalist.appendChild(option);
         });
 
-        // Dibuja nodos
-        data.nodes.forEach(nodo => {
-            const marker = L.circleMarker([nodo.lat, nodo.lon], { radius: 4 }).addTo(map);
-            marker.bindPopup(`<b>${nodo.id}</b>`);
+        grafoCompleto.nodes.forEach(nodo => {
+            const marker = L.circleMarker([nodo.lat, nodo.lon], { radius: 4 })
+                .bindPopup(`<b>${nodo.distrito} - ${nodo.id}</b>`);
+            nodosTecnicos.addLayer(marker);
             markers.push([nodo.lat, nodo.lon]);
         });
 
-        // Dibuja aristas
-        data.edges.forEach(edge => {
-            L.polyline(edge.coords, { weight: 1 }).addTo(map);
+        grafoCompleto.edges.forEach(edge => {
+            L.polyline(edge.coords, { weight: 2 })
+                .bindPopup(`Peso: ${edge.weight.toFixed(2)} km`)
+                .addTo(aristasTecnicas);
         });
 
-        // Ajustar el tamaño del mapa para mostrar los nodos
-        if (markers.length > 0) {
-            map.fitBounds(markers);
-        }
+        grafoCompleto.nodes.forEach(nodo => {
+            L.marker([nodo.lat, nodo.lon], { icon: iconoUsuario })
+                .bindPopup(`<b>${nodo.distrito}</b><br>${nodo.id}`)
+                .addTo(nodosUsuario);
+        });
+
+        nodosUsuario.addTo(map);
+
+        if (markers.length > 0) map.fitBounds(markers);
     });
 
-// Cambiar Grafo
+function obtenerPesoEntre(a, b) {
+    if (!grafoCompleto) return null;
+
+    const e = grafoCompleto.edges.find(edge =>
+        (edge.from === a && edge.to === b) ||
+        (edge.from === b && edge.to === a)
+    );
+
+    return e ? e.weight : null;
+}
+
+function buscarNodoPorCoords([lat, lon]) {
+    const nodo = grafoCompleto.nodes.find(n =>
+        Math.abs(n.lat - lat) < 0.000001 &&
+        Math.abs(n.lon - lon) < 0.000001
+    );
+
+    return nodo ? nodo.id : null;
+}
+
+// Vista Usuario
+btnUsuario.addEventListener('click', () => {
+    map.removeLayer(nodosTecnicos);
+    map.removeLayer(aristasTecnicas);
+
+    if (mstLayer) map.removeLayer(mstLayer);
+    if (dijkstraLayer) map.removeLayer(dijkstraLayer);
+
+    map.addLayer(nodosUsuario);
+    setResultado("Modo Usuario: mostrando solo marcadores.");
+});
+
+// Vista Técnico
+btnTecnico.addEventListener('click', () => {
+    map.removeLayer(nodosUsuario);
+    map.addLayer(nodosTecnicos);
+    map.addLayer(aristasTecnicas);
+
+    setResultado("Modo Técnico: mostrando grafo completo.");
+});
+
+// Control de panel
 function actualizarPanel() {
     const opcion = select.value;
 
@@ -70,6 +146,7 @@ function actualizarPanel() {
         map.removeLayer(dijkstraLayer);
         dijkstraLayer = null;
     }
+
     if (mstLayer) {
         map.removeLayer(mstLayer);
         mstLayer = null;
@@ -78,14 +155,12 @@ function actualizarPanel() {
     setResultado("");
 
     if (opcion === "1") {
-        // Dijkstra
         panelTitle.textContent = "Ruta con Dijkstra";
         respuestaOrigen.style.display = "flex";
         respuestaDestino.style.display = "flex";
     }
 
     if (opcion === "2") {
-        // Prim
         panelTitle.textContent = "Árbol de Expansión Mínima - Prim";
         respuestaOrigen.style.display = "none";
         respuestaDestino.style.display = "none";
@@ -93,7 +168,6 @@ function actualizarPanel() {
     }
 
     if (opcion === "3") {
-        // Kruskal
         panelTitle.textContent = "Árbol de Expansión Mínima - Kruskal";
         respuestaOrigen.style.display = "none";
         respuestaDestino.style.display = "none";
@@ -101,94 +175,10 @@ function actualizarPanel() {
     }
 }
 
+select.addEventListener('change', actualizarPanel);
+actualizarPanel();
+
+// Mostrar resultado
 function setResultado(texto) {
     resultadoDiv.textContent = texto;
 }
-
-select.addEventListener('change', actualizarPanel);
-
-// Estado inicial
-actualizarPanel();
-
-// Grafo Prim / Kruskal
-function dibujarMST(alg) {
-    fetch(`/mst?alg=${encodeURIComponent(alg)}`)
-        .then(r => r.json())
-        .then(data => {
-            if (data.error) {
-                setResultado(`Error: ${data.error}`);
-                return;
-            }
-
-            // Limpiar ruta previa
-            if (mstLayer) {
-                map.removeLayer(mstLayer);
-            }
-            if (dijkstraLayer) {
-                map.removeLayer(dijkstraLayer);
-                dijkstraLayer = null;
-            }
-
-            mstLayer = L.featureGroup();
-
-            const colorLinea = data.algoritmo === 'Prim' ? 'green' : 'purple';
-
-            data.edges.forEach(coords => {
-                L.polyline(coords, {
-                    weight: 4,
-                    color: colorLinea
-                }).addTo(mstLayer);
-            });
-
-            mstLayer.addTo(map);
-            map.fitBounds(mstLayer.getBounds());
-
-            setResultado(
-                `Árbol de Expansión Mínima - ${data.algoritmo}:\n\n` +
-                `Costo total:\n${data.total_cost.toFixed(2)} km`
-            );
-        });
-}
-
-// Calcular Dijkstra
-btnCalcular.addEventListener('click', () => {
-    if (select.value !== "1") {
-        setResultado("El botón 'Calcular' solo funciona con Dijkstra.");
-        return;
-    }
-
-    const origen = origenInput.value.trim().split(" - ").pop();
-    const destino = destinoInput.value.trim().split(" - ").pop();
-
-    if (!origen || !destino) {
-        setResultado("Por favor ingresa ambos nodos.");
-        return;
-    }
-
-    fetch(`/dijkstra?origen=${encodeURIComponent(origen)}&destino=${encodeURIComponent(destino)}`)
-        .then(r => r.json())
-        .then(data => {
-            if (data.error) {
-                setResultado(`Error: ${data.error}`);
-                return;
-            }
-
-            // Limpiar ruta anterior
-            if (dijkstraLayer) map.removeLayer(dijkstraLayer);
-            if (mstLayer) map.removeLayer(mstLayer);
-
-            // Dibujar ruta
-            dijkstraLayer = L.polyline(data.coords, {
-                weight: 4,
-                color: 'red'
-            }).addTo(map);
-
-            map.fitBounds(dijkstraLayer.getBounds());
-
-            setResultado(
-                `Camino mínimo (Dijkstra):\n` +
-                `${data.path.join(' → ')}\n\n` +
-                `Distancia total:\n${data.distance.toFixed(2)} km`
-            );
-        });
-});
