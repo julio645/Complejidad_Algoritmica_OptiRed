@@ -1,5 +1,5 @@
-function dibujarMST(alg) {
-    fetch(`/mst?alg=${encodeURIComponent(alg)}`)
+function dibujarMST() {
+    fetch(`/mst`)
         .then(r => r.json())
         .then(data => {
             if (data.error) {
@@ -11,7 +11,8 @@ function dibujarMST(alg) {
             if (dijkstraLayer) map.removeLayer(dijkstraLayer);
 
             mstLayer = L.featureGroup();
-            const colorLinea = data.algoritmo === 'Prim' ? 'green' : 'purple';
+
+            const colorLinea = 'green';
 
             data.edges.forEach(coords => {
                 const nodoA = buscarNodoPorCoords(coords[0]);
@@ -22,16 +23,16 @@ function dibujarMST(alg) {
                     weight: 4,
                     color: colorLinea
                 })
-                    .bindPopup(`Peso: ${peso.toFixed(2)} km`)
-                    .addTo(mstLayer);
+                .bindPopup(`Peso: ${peso.toFixed(2)} km`)
+                .addTo(mstLayer);
             });
 
             mstLayer.addTo(map);
             map.fitBounds(mstLayer.getBounds());
 
             setResultado(
-                `Árbol de Expansión Mínima - ${data.algoritmo}:\n\n` +
-                `Costo total:\n${data.total_cost.toFixed(2)} km`
+                `Usando el Árbol de Expansión Mínima, la distancia total es:\n` +
+                `${data.total_cost.toFixed(2)} km`
             );
         });
 }

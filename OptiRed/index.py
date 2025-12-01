@@ -1,7 +1,6 @@
 from flask import Flask, jsonify, render_template, request
 from grafo import G
 from dijkstra import ejecutar_dijkstra
-from prim import arbol_prim
 from kruskal import arbol_kruskal
 
 app = Flask(__name__)
@@ -58,20 +57,11 @@ def api_dijkstra():
         "coords": coords
     })
 
-# Prim / Kruskal
+# Kruskal
 @app.route('/mst')
 def api_mst():
-    alg = request.args.get("alg", "prim")
-
-    if alg == "prim":
-        mst = arbol_prim(G)
-        nombre = "Prim"
-    elif alg == "kruskal":
-        mst = arbol_kruskal(G)
-        nombre = "Kruskal"
-    else:
-        return jsonify({"error": "Algoritmo no válido"}), 400
-
+    mst = arbol_kruskal(G)
+    nombre = "Kruskal"
     edges = []
     total_cost = 0
 

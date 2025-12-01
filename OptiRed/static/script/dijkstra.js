@@ -1,9 +1,4 @@
-btnCalcular.addEventListener('click', () => {
-    if (select.value !== "1") {
-        setResultado("El botón 'Calcular' solo funciona con Dijkstra.");
-        return;
-    }
-
+function ejecutarDijkstra() {
     const origen = origenInput.value.trim().split(" - ").pop();
     const destino = destinoInput.value.trim().split(" - ").pop();
 
@@ -15,6 +10,7 @@ btnCalcular.addEventListener('click', () => {
     fetch(`/dijkstra?origen=${encodeURIComponent(origen)}&destino=${encodeURIComponent(destino)}`)
         .then(r => r.json())
         .then(data => {
+
             if (data.error) {
                 setResultado(`Error: ${data.error}`);
                 return;
@@ -28,7 +24,6 @@ btnCalcular.addEventListener('click', () => {
             for (let i = 0; i < data.coords.length - 1; i++) {
                 const puntoA = data.coords[i];
                 const puntoB = data.coords[i + 1];
-
                 const nodoA = buscarNodoPorCoords(puntoA);
                 const nodoB = buscarNodoPorCoords(puntoB);
                 const peso = obtenerPesoEntre(nodoA, nodoB);
@@ -50,4 +45,4 @@ btnCalcular.addEventListener('click', () => {
                 `Distancia total:\n${data.distance.toFixed(2)} km`
             );
         });
-});
+}

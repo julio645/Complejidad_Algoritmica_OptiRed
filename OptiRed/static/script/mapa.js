@@ -1,7 +1,6 @@
 let grafoCompleto = null;
 let dijkstraLayer = null;
 let mstLayer = null;
-
 let nodosTecnicos = L.layerGroup();
 let aristasTecnicas = L.layerGroup();
 let nodosUsuario = L.layerGroup();
@@ -17,25 +16,8 @@ const btnCalcular = document.getElementById('btn-calcular');
 const resultadoDiv = document.getElementById('resultado');
 const btnUsuario = document.getElementById('btn-usuario');
 const btnTecnico = document.getElementById('btn-tecnico');
-
-L.Control.Watermark = L.Control.extend({
-    onAdd: function () {
-        const img = L.DomUtil.create('img');
-        img.src = '/static/img/logo.png';
-        img.style.width = '120px';
-        return img;
-    },
-    onRemove: function () {}
-});
-
-L.control.watermark = function (opts) {
-    return new L.Control.Watermark(opts);
-};
-
 const map = L.map('map').setView([-12.0464, -77.0428], 9);
-L.control.watermark({ position: 'bottomleft' }).addTo(map);
 
-// Icono
 const iconoUsuario = L.icon({
     iconUrl: '/static/img/antenna-1.svg',
     iconSize: [38, 38],
@@ -43,7 +25,6 @@ const iconoUsuario = L.icon({
     popupAnchor: [0, -38]
 });
 
-// Mapa base
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: 'OptiRed',
@@ -53,7 +34,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     crossOrigin: true
 }).addTo(map);
 
-// Cargar grafo desde API
+// Cargar grafo
 fetch('/data/grafo')
     .then(response => response.json())
     .then(data => {
@@ -115,7 +96,6 @@ function buscarNodoPorCoords([lat, lon]) {
     return nodo ? nodo.id : null;
 }
 
-// Vista Usuario
 btnUsuario.addEventListener('click', () => {
     map.removeLayer(nodosTecnicos);
     map.removeLayer(aristasTecnicas);
@@ -124,19 +104,17 @@ btnUsuario.addEventListener('click', () => {
     if (dijkstraLayer) map.removeLayer(dijkstraLayer);
 
     map.addLayer(nodosUsuario);
-    setResultado("Modo Usuario: mostrando solo marcadores.");
+    setResultado("Modo Usuario, mostrando antenas.");
 });
 
-// Vista Técnico
 btnTecnico.addEventListener('click', () => {
     map.removeLayer(nodosUsuario);
     map.addLayer(nodosTecnicos);
     map.addLayer(aristasTecnicas);
 
-    setResultado("Modo Técnico: mostrando grafo completo.");
+    setResultado("Modo Técnico, mostrando grafo.");
 });
 
-// Control de panel
 function actualizarPanel() {
     const opcion = select.value;
 
@@ -159,26 +137,24 @@ function actualizarPanel() {
         respuestaOrigen.style.display = "flex";
         respuestaDestino.style.display = "flex";
     }
-
-    if (opcion === "2") {
-        panelTitle.textContent = "Árbol de Expansión Mínima - Prim";
-        respuestaOrigen.style.display = "none";
-        respuestaDestino.style.display = "none";
-        dibujarMST('prim');
-    }
-
-    if (opcion === "3") {
+    else {
         panelTitle.textContent = "Árbol de Expansión Mínima - Kruskal";
         respuestaOrigen.style.display = "none";
         respuestaDestino.style.display = "none";
-        dibujarMST('kruskal');
+        dibujarMST();
     }
 }
+
+btnCalcular.addEventListener('click', () => {
+    const opcion = select.value;
+
+    if (opcion === "1") ejecutarDijkstra();
+    else dibujarMST();
+});
 
 select.addEventListener('change', actualizarPanel);
 actualizarPanel();
 
-// Mostrar resultado
 function setResultado(texto) {
     resultadoDiv.textContent = texto;
 }
